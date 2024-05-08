@@ -11,7 +11,7 @@ def get_stream_link(channel_name):
         print("ERROR: could not retrieve stream url")
         return None
     
-#Load Haar Cascade classifier for face reconition
+#Load Haar Cascade classifier for face reconitionp
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 #Starting the programm
