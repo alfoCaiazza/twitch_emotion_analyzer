@@ -41,7 +41,7 @@ if stream_url:
             gray = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2GRAY)
 
             #Detection of the faces in the modified frame
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.4, minNeighbors=4, minSize=(30,30))
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.38, minNeighbors=6, minSize=(30,30))
 
             #Draws rectangles around the detected faces
             for(x, y, w, h) in faces:
