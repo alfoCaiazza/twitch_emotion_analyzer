@@ -85,6 +85,8 @@ if stream_url:
                 frame_count = 0
 
             #Display the new frame
+            cv2.namedWindow('Face Detector with Emotions', cv2.WINDOW_NORMAL) 
+            cv2.resizeWindow('Face Detector with Emotions', 1400, 700) 
             cv2.imshow('Face Detector with Emotions', frame)
 
             #Exit conditions
