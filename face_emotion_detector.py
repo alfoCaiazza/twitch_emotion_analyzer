@@ -1,6 +1,15 @@
 import cv2
 import streamlink
-from deepface import DeepFace 
+from deepface import DeepFace
+
+#Processing the frame
+def process_frame(frame, perc):
+    width = int(frame.shape[1] * perc / 100)
+    height = int(frame.shape[0] * perc / 100)
+    dim = (width, height)
+    resized_frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
+    return resized_frame
 
 #Getting stream url if exist
 def get_stream_link(channel_name):
@@ -23,13 +32,21 @@ def get_emotion_color(emotion):
         'disgust': '\033[96m'
     }
 
-    return colors.get(emotion, '\033[97m]')
+    return colors.get(emotion, '\033[97m]') #Default showing white text
+
+#In order to visualize the most predicted emotion, it has been set up a display threshold: in an emotion in consecutively predicted for
+# n times then it is displayed
+emotion_count = {}
+display_threshold = 3
+#Default text
+emotion_to_display = ""
 
 # Load face detector classifier --> maybe it can be improved
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 channel = input('Insert channel name: ')
 stream_url = get_stream_link(channel)
+last_emotion = None
 
 # Streaming control
 if stream_url:
@@ -38,8 +55,13 @@ if stream_url:
 
     # Strategy: using only a number of sampling for the emotion recognition instead of all the frames in the stream
     # Set the number of frame to skip
-    skip_frames = 15  # The greater it is the less information we got but the program runs faster
+    skip_frames = 15 # The greater it is the less information we got but the program runs faster
     frame_count = 0
+
+    #Check on FPS of the stream
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    print(f"FPS of the stream: {fps}")
+
 
     #Processing frames
     while cap.isOpened():
@@ -54,12 +76,8 @@ if stream_url:
             # Processing only the 'skip_frames' frame
             if frame_count % skip_frames == 0:
                 # In order to improve classification speeed, the frame dimensions are reduced by 50%
-                # --> TIP: use a function
                 perc = 50
-                width = int(frame.shape[1] * perc / 100)
-                height = int(frame.shape[0] * perc / 100)
-                dim = (width, height)
-                resized_frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+                resized_frame = process_frame(frame, perc)
                 
                 #from BGR to gray scale
                 gray = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2GRAY)
@@ -75,8 +93,20 @@ if stream_url:
                         analysis = DeepFace.analyze(face_roi, actions=['emotion'], enforce_detection=False)
                         get_emotion = analysis[0]
                         emotion = get_emotion['dominant_emotion']
-                        color = get_emotion_color(emotion)
-                        print(color + "Emotion: " + emotion + "\033[0m")
+
+                        if emotion != last_emotion:
+                            emotion_count = {}
+                        last_emotion = emotion
+                        if emotion in emotion_count:
+                            emotion_count[emotion] += 1
+                        else:
+                            emotion_count[emotion] = 1
+                        
+                        #Display the emotion and set to 0 the count if the treshold is reached
+                        if emotion_count[emotion] > display_threshold:
+                            color = get_emotion_color(emotion)
+                            print(color + "Most frequent emotion: " + emotion + "\033[0m")
+                            emotion_count = {}  # Reset counter to 0 for all emotions
                     except Exception as e:
                         print("Error in emotion analysis:", e)
 
