@@ -1,6 +1,14 @@
 import cv2
 import streamlink
+import websockets
+import asyncio
 from deepface import DeepFace
+
+async def send_emotion(emotion):
+    uri = "ws://localhost:6789"
+    async with websockets.connect(uri) as websocket:
+        await websocket.send(emotion)
+        print(await websocket.recv()) 
 
 #Processing the frame
 def process_frame(frame, perc):
@@ -37,7 +45,7 @@ def get_emotion_color(emotion):
 #In order to visualize the most predicted emotion, it has been set up a display threshold: in an emotion in consecutively predicted for
 # n times then it is displayed
 emotion_count = {}
-display_threshold = 3
+display_threshold = 2
 #Default text
 emotion_to_display = ""
 
@@ -106,6 +114,7 @@ if stream_url:
                         if emotion_count[emotion] > display_threshold:
                             color = get_emotion_color(emotion)
                             print(color + "Most frequent emotion: " + emotion + "\033[0m")
+                            asyncio.get_event_loop().run_until_complete(send_emotion(emotion))
                             emotion_count = {}  # Reset counter to 0 for all emotions
                     except Exception as e:
                         print("Error in emotion analysis:", e)
