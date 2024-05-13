@@ -45,7 +45,7 @@ def get_emotion_color(emotion):
 #In order to visualize the most predicted emotion, it has been set up a display threshold: in an emotion in consecutively predicted for
 # n times then it is displayed
 emotion_count = {}
-display_threshold = 2
+display_threshold = 4
 #Default text
 emotion_to_display = ""
 
@@ -63,7 +63,7 @@ if stream_url:
 
     # Strategy: using only a number of sampling for the emotion recognition instead of all the frames in the stream
     # Set the number of frame to skip
-    skip_frames = 15 # The greater it is the less information we got but the program runs faster
+    skip_frames = 5 # The greater it is the less information we got but the program runs faster
     frame_count = 0
 
     #Check on FPS of the stream
@@ -84,7 +84,7 @@ if stream_url:
             # Processing only the 'skip_frames' frame
             if frame_count % skip_frames == 0:
                 # In order to improve classification speeed, the frame dimensions are reduced by 50%
-                perc = 50
+                perc = 20
                 resized_frame = process_frame(frame, perc)
                 
                 #from BGR to gray scale
