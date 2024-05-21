@@ -30,17 +30,16 @@ def get_stream_link(channel_name):
     
 #Set a color for each emotion
 def get_emotion_color(emotion):
-    colors= {
-        'happy': '\033[92m',
-        'sad': '\033[94m',
-        'angry': '\033[91m',
-        'fear': '\033[95m',
-        'surprise': '\033[93m',
-        'neutral': '\033[97m',
-        'disgust': '\033[96m'
+    colors = {
+        'happy': (0, 255, 0),      # Verde
+        'sad': (255, 0, 0),        # Blu
+        'angry': (0, 0, 255),      # Rosso
+        'fear': (128, 0, 128),     # Viola
+        'surprise': (0, 255, 255), # Giallo
+        'neutral': (255, 255, 255),# Bianco
+        'disgust': (255, 255, 0)   # Ciano
     }
-
-    return colors.get(emotion, '\033[97m]') #Default showing white text
+    return colors.get(emotion, (255, 255, 255))  #Default showing white text
 
 #In order to visualize the most predicted emotion, it has been set up a display threshold: in an emotion in consecutively predicted for
 # n times then it is displayed
@@ -116,10 +115,11 @@ if stream_url:
                             print(color + "Most frequent emotion: " + emotion + "\033[0m")
                             asyncio.get_event_loop().run_until_complete(send_emotion(emotion))
                             emotion_count = {}  # Reset counter to 0 for all emotions
+                            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
+                            cv2.putText(frame, emotion, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 2, color, 2)
                     except Exception as e:
                         print("Error in emotion analysis:", e)
 
-                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
 
                 frame_count = 0
 
