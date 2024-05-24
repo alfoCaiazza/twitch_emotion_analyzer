@@ -42,14 +42,19 @@ def get_emotion_color(emotion):
     return colors.get(emotion, (255, 255, 255))  # Default white color
 
 # Load the emotion classifier model
-emotion_model_path = 'cnn_FER2013.h5'
+emotion_model_path = 'twitch_emotion_analyzer\cnn_FER2013.h5'
 emotion_classifier = load_model(emotion_model_path)
 emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
 
 # Load face detector classifier
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
 
+# User inputs
 channel = input('Inserisci il nome del canale: ')
+min_freq = int(input('Inserisci la frequenza minima di campionamento (frame/secondo): '))
+avg_freq = int(input('Inserisci la frequenza media di campionamento (frame/secondo): '))
+max_freq = int(input('Inserisci la frequenza massima di campionamento (frame/secondo): '))
+
 stream_url = get_stream_link(channel)
 last_emotion = None
 
@@ -84,6 +89,9 @@ if stream_url:
 
     frame_count = 0
 
+    # Calculate frame interval based on user input and stream FPS
+    interval = fps // avg_freq
+
     # Processing frames
     while cap.isOpened():
         # Read
@@ -97,8 +105,8 @@ if stream_url:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             res_frame = process_frame(gray, 25)  # Further reduce the resolution to 25%
 
-            # Only analyze every 40th frame for emotions to improve performance
-            if frame_count % 40 == 0:
+            # Only analyze frames at specified interval
+            if frame_count % interval == 0:
                 faces = face_cascade.detectMultiScale(res_frame, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
                 # Clear last detected faces and emotions
